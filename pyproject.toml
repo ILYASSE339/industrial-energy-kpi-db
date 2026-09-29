@@ -1,0 +1,24 @@
+[project]
+name = "industrial-energy-kpi-db"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "ILYASSE", email = "ilyasyou03@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "jupyter>=1.1.1",
+    "matplotlib>=3.11.2",
+    "numpy>=2.5.3",
+    "pandas>=3.0.6",
+    "psycopg[binary]>=3.3.6",
+    "sqlalchemy>=2.1.1",
+]
+
+[project.scripts]
+industrial-energy-kpi-db = "industrial_energy_kpi_db:main"
+
+[build-system]
+requires = ["uv_build>=0.12.19,<0.13.0"]
+build-backend = "uv_build"
