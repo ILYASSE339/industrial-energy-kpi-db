@@ -65,7 +65,7 @@ interpreted results.
 Requirements: [uv](https://docs.astral.sh/uv/) and PostgreSQL.
 
 ```bash
-git clone https://github.com/<your-username>/industrial-energy-kpi-db.git
+git clone https://github.com/ILYASSE339/industrial-energy-kpi-db.git
 cd industrial-energy-kpi-db
 uv sync                 # recreates the exact Python environment from uv.lock
 # download the CSV from UCI and place it in data/raw/
