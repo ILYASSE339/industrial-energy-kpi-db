@@ -14,3 +14,6 @@ data/raw/
 data/processed/
 .ipynb_checkpoints/
 .DS_Store
+
+# Notebook cash
+.ipynb_checkpoints
