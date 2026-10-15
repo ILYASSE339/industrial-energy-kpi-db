@@ -2,6 +2,9 @@ DROP VIEW  IF EXISTS measurement_enriched;
 DROP TABLE IF EXISTS emission_factor;
 
 -- 1. Périodes tarifaires (hypothèse : grille horaire coréenne)
+ALTER TABLE measurement DROP COLUMN IF EXISTS period_id;
+DROP TABLE IF EXISTS tariff_period;
+
 CREATE TABLE tariff_period (
     period_id  smallint PRIMARY KEY,
     code       text NOT NULL UNIQUE,     -- 'Light_Load', ...
