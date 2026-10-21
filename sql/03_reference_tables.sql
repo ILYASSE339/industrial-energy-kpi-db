@@ -32,5 +32,26 @@ CREATE TABLE emission_factor (
     source          text    NOT NULL,
     PRIMARY KEY (site_id, valid_from)
 );
--- INSERT INTO emission_factor VALUES
---    (1, '2018-01-01', '2018-12-31', ___, 'Déduit du dataset UCI : SUM(co2)/SUM(kWh)');
+
+INSERT INTO emission_factor VALUES
+    (1, '2018-01-01', '2018-12-31', 0.46,
+     'Estimé sur les intervalles >= 100 kWh du dataset UCI (CO2 source arrondi à 0,01 t ; résidu ±0,04 kg/kWh non expliqué)');
+
+
+CREATE VIEW measurement_enriched AS
+SELECT m.ts,
+       m.usage_kwh,
+       m.lagging_reactive_kvarh,
+       m.leading_reactive_kvarh,
+       m.usage_kwh * 4                                                  AS power_kw,
+       (m.usage_kwh * 4) / NULLIF(SQRT(POWER(m.usage_kwh * 4, 2) + POWER(m.lagging_reactive_kvarh * 4, 2)), 0) AS pf_lagging,
+       EXTRACT(HOUR   FROM m.ts AT TIME ZONE 'Asia/Seoul')              AS local_hour,
+       EXTRACT(ISODOW FROM m.ts AT TIME ZONE 'Asia/Seoul')              AS iso_dow,
+       (EXTRACT(ISODOW FROM m.ts AT TIME ZONE 'Asia/Seoul') = 7)        AS is_sunday,
+       tp.label                                                         AS period,
+       m.usage_kwh * ef.kg_co2_per_kwh / 1000                           AS co2_t
+FROM measurement m
+JOIN tariff_period   tp ON m.period_id = tp.period_id
+JOIN meter           mt ON mt.meter_id = m.meter_id
+JOIN emission_factor ef ON ef.site_id = mt.site_id
+                       AND (m.ts AT TIME ZONE 'Asia/Seoul')::date BETWEEN ef.valid_from AND ef.valid_to;
