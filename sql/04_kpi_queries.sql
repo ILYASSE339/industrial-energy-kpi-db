@@ -17,3 +17,17 @@ SELECT period,
 FROM measurement_enriched
 GROUP BY period
 ORDER BY energy_mwh DESC;
+
+-- Q4 : pointe mensuelle (kW) avec date et heure locales
+WITH ranked AS (
+    SELECT DATE_TRUNC('month', ts AT TIME ZONE 'Asia/Seoul') AS month,
+           ts AT TIME ZONE 'Asia/Seoul'                      AS local_ts,
+           power_kw,
+           ROW_NUMBER() OVER (PARTITION BY DATE_TRUNC('month', ts AT TIME ZONE 'Asia/Seoul')
+                              ORDER BY power_kw DESC)         AS rank
+    FROM measurement_enriched
+)
+SELECT month::date, local_ts, ROUND(power_kw::numeric, 1) AS peak_kw
+FROM ranked
+WHERE rank = 1
+ORDER BY month;

@@ -124,10 +124,10 @@ Design rules:
 
 | Question | Result | Interpretation |
 |---|---|---|
-| Q1 — Base load | [to complete] | |
-| Q4 — Monthly peak with date and time | values above; dates [to complete] | |
+| Q1 — Base load | **13.0 kW**, i.e. 114 MWh/year, **11.8 %** of annual energy | Even when idle (nights, Sundays), the plant draws 13 kW. Each permanent kW costs 8.76 MWh/year: worth an audit of permanent consumers. |
+| Q4 — Monthly peak with date and time | 487–629 kW; **all on working days, 8 of 12 between 09:00 and 11:15, 4 on Mondays** | The billed peak is set by the morning ramp-up, probably the simultaneous start of large consumers after the Sunday stop. Staggering start-ups is a no-investment lever. Three peaks fall exactly at 09:00, the last off-peak quarter-hour before the tariff switch — to investigate.
 | Q7 — Hourly profile | [to complete] | |
-| Q8 — Energy by tariff period | [to complete] | |
+| Q8 — Energy by tariff period | Peak hours: **44.9 %** of energy for **20.8 %** of time (×2.2); shoulder 38.8 % / 27.7 %; off-peak 16.2 % / 51.6 % | Production is concentrated in the most expensive hours. Shifting part of it to shoulder or off-peak hours is a significant cost lever, to quantify with the actual tariff. |
 | Q10 — Time above the reactive threshold | [to complete] | |
 
 ## 6. Limitations
