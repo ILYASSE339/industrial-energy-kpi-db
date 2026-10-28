@@ -3,10 +3,20 @@
 Turning raw 15-minute meter data from a steel plant into reliable energy
 performance indicators that support energy-efficiency decisions.
 
-**Status:** v1.0 in progress — schema, data quality checks and enriched view done; KPI queries being written.
+**Status:** v1.0 — complete. Next step: the same approach applied to a steam-power utilities optimizer.
+
+## Key findings
+
+| | Finding | Why it matters |
+|---|---|---|
+| 1 | **Base load of 13 kW = 11.8 % of annual energy** (114 MWh, 52 tCO₂) | Consumed even when the plant is idle; each permanent kW costs 8.76 MWh/year |
+| 2 | **Peak hours carry 44.9 % of energy for 20.8 % of the time** | Production sits in the most expensive tariff hours |
+| 3 | **Monthly peaks come from the morning ramp-up**, 4 of 12 on Mondays | The billed peak can be lowered by staggering start-ups, without investment |
+| 4 | **Reactive power is above the French billing threshold**: energy-weighted tan φ = 0.48 (> 0.4), 53–77 % of operating time above 0.4 depending on the month | A compensation study is justified |
+| 5 | **The source CO₂ column underestimates emissions by about 9 %** | Rounding to 0.01 t sets base-load intervals to zero; recomputed with 0.46 kg/kWh |
 
 The project follows a DMAIC structure: **Define** (section 1), **Measure** (data quality, section 3),
-**Analyze** (KPI queries and results, sections 4–5), **Improve / Control** (recommendations and limitations, sections 5–6).
+**Analyze** (sections 4–5), **Improve** (section 6), **Control** (section 6 and limitations, section 7).
 
 ## 1. Problem
 
@@ -125,12 +135,24 @@ Design rules:
 | Question | Result | Interpretation |
 |---|---|---|
 | Q1 — Base load | **13.0 kW**, i.e. 114 MWh/year, **11.8 %** of annual energy | Even when idle (nights, Sundays), the plant draws 13 kW. Each permanent kW costs 8.76 MWh/year: worth an audit of permanent consumers. |
-| Q4 — Monthly peak with date and time | 487–629 kW; **all on working days, 8 of 12 between 09:00 and 11:15, 4 on Mondays** | The billed peak is set by the morning ramp-up, probably the simultaneous start of large consumers after the Sunday stop. Staggering start-ups is a no-investment lever. Three peaks fall exactly at 09:00, the last off-peak quarter-hour before the tariff switch — to investigate.
-| Q7 — Hourly profile | [to complete] | |
+| Q4 — Monthly peak with date and time | 487–629 kW; **all on working days, 8 of 12 between 09:00 and 11:15, 4 on Mondays** | The billed peak is set by the morning ramp-up, probably the simultaneous start of large consumers after the Sunday stop. Staggering start-ups is a no-investment lever. Three peaks fall exactly at 09:00, the last off-peak quarter-hour before the tariff switch — to investigate. |
+| Q7 — Hourly profile (working days vs Sundays) | Working days: ~17.5 kW at night, **ramp-up 08:00–09:00** (19 → 168 → 263 kW), **lunch dip at 12:00** (82 kW), second plateau 14:00–16:00 (~250 kW), reduced evening 18:00–20:00 (~150–175 kW), **slow shutdown 21:00–01:00** (62 → 26 kW). Sundays: 13–16 kW at night but **45–64 kW between 08:00 and 16:00** | Two daily ramp-ups (08:00 and 13:00) explain the peak timestamps of Q4: 9 in the morning (09:00–12:00), 3 in the early afternoon (13:45–14:30). The shutdown tail costs about 24 MWh/year above base load. Sunday daytime consumption is well above base load: something runs on Sundays — to investigate. |
 | Q8 — Energy by tariff period | Peak hours: **44.9 %** of energy for **20.8 %** of time (×2.2); shoulder 38.8 % / 27.7 %; off-peak 16.2 % / 51.6 % | Production is concentrated in the most expensive hours. Shifting part of it to shoulder or off-peak hours is a significant cost lever, to quantify with the actual tariff. |
-| Q10 — Time above the reactive threshold | [to complete] | |
+| Q10 — Share of operating time with tan φ > 0.4, by month | **53–77 %** depending on the month (max October 77.0 %, min February 53.4 %); energy-weighted tan φ over 2018 = **0.48** | The plant is structurally above the 0.4 threshold, not only at low load. The split by tariff period (billing applies to daytime winter periods in France) is the next check before sizing compensation. |
 
-## 6. Limitations
+## 6. Recommendations (Improve) and follow-up (Control)
+
+| Lever | Action | Expected effect | Follow-up indicator |
+|---|---|---|---|
+| Base load | Audit of permanent consumers at night and on Sundays (compressors, cooling, lighting, idle equipment) | Each kW removed saves 8.76 MWh and about 4 tCO₂ per year | Monthly median power at night and on Sundays |
+| Peak demand | Stagger the morning start-up of large consumers, especially on Mondays | Lower billed monthly peak, no investment | Monthly peak with date and time (Q4) |
+| Load shifting | Assess which production steps can move from peak to shoulder or off-peak hours | Lower energy cost, to quantify with the actual tariff | Share of energy in peak hours (Q8) |
+| Reactive power | Compensation study: automatic stepped capacitor bank (load varies from 13 to 630 kW), after a harmonics check | Avoided reactive charges, lower losses, freed transformer capacity | Monthly energy-weighted tan φ and share of time above 0.4 (Q10) |
+| Shutdown tail | Review the end-of-day shutdown sequence (21:00–01:00) | About 24 MWh/year above base load | Average power 22:00–01:00 on working days (Q7) |
+
+A worked DMAIC project charter for base-load reduction is available in [`docs/dmaic_talon.md`](docs/dmaic_talon.md).
+
+## 7. Limitations
 
 - Single site, single year: no inter-annual comparison is possible.
 - **No production data:** specific energy consumption (kWh per tonne), the key efficiency indicator, cannot be computed.
@@ -138,7 +160,7 @@ Design rules:
 - CO₂ is recomputed with a single emission factor estimated from the data (0.46 kg/kWh, residual ±0.04).
 - The timestamp convention (start of interval) is an assumption.
 
-## 7. How to run
+## 8. How to run
 
 Requirements: [uv](https://docs.astral.sh/uv/) and PostgreSQL.
 
@@ -160,7 +182,7 @@ psql energy_kpi -f sql/04_kpi_queries.sql
 ```text
 sql/               questions, schema, loading, reference tables, KPI queries
 notebooks/         exploration and staging load (not a final deliverable)
-docs/              system sheets (energy domain notes)
+docs/              system sheets (energy domain notes) and DMAIC project charter
 data/raw/          original data, never modified (not versioned)
 data/processed/    regenerated outputs (not versioned)
 src/, tests/       reusable code and automated tests (to come)
