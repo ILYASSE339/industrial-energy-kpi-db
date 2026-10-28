@@ -31,3 +31,22 @@ SELECT month::date, local_ts, ROUND(power_kw::numeric, 1) AS peak_kw
 FROM ranked
 WHERE rank = 1
 ORDER BY month;
+
+-- Q7 Profil horaire moyen (kW) : jours ouvrés (lun–sam) vs dimanche
+
+SELECT local_hour                                                       AS hour,
+       ROUND((AVG(power_kw) FILTER (WHERE NOT is_sunday))::numeric, 1)  AS avg_kw_mon_sat,
+       ROUND((AVG(power_kw) FILTER (WHERE is_sunday))::numeric, 1)      AS avg_kw_sunday
+FROM measurement_enriched
+GROUP BY local_hour
+ORDER BY local_hour;
+
+
+-- Q10 : % du temps de fonctionnement (P > 0) avec tan φ > 0,4, par mois
+
+SELECT DATE_TRUNC('month', ts AT TIME ZONE 'Asia/Seoul')::date                                         AS month,
+       ROUND(100.0 * COUNT(*) FILTER (WHERE lagging_reactive_kvarh > 0.4 * usage_kwh) / COUNT(*), 1) AS pct_tan_phi_gt_0_4
+FROM measurement_enriched
+WHERE usage_kwh > 0
+GROUP BY 1
+ORDER BY 1;
